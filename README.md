@@ -129,6 +129,7 @@ scripts/build-native.sh android   # 需要 JDK、Android SDK 35 与签名密钥
 ├── src/                  React 界面、原生桥接与演示数据
 │   ├── App.jsx           页面框架、状态与视图切换
 │   ├── Account.jsx       账号概览卡片
+│   ├── Activity.jsx      上传与魔力收益面板
 │   ├── Downloads.jsx     下载页与发送弹窗、完成提醒
 │   ├── Farming.jsx       刷流助手
 │   ├── SettingsPage.jsx  设置、备份与迁移
@@ -163,20 +164,20 @@ scripts/build-native.sh android   # 需要 JDK、Android SDK 35 与签名密钥
 
 | 命令 | 内容 |
 | --- | --- |
-| `npm test` | 90 项 `node --test` 测试：账号、RSS、凭据保险箱、登录鉴权、原生适配、IPv6 URL、二进制 multipart、精确哈希、重复任务、登录过期重试、任务分页、刷流评分、备份加解密、TJUPT 解析/登录/路由，以及站点白名单一致性 |
+| `npm test` | 90 项 `node --test` 测试：账号、RSS、凭据保险箱、登录鉴权、原生适配、IPv6 URL、二进制 multipart、精确哈希、重复任务、登录过期重试、任务分页、刷流评分、备份加解密、TJUPT 解析/登录/路由，以及站点白名单一致性；站点打包检查需先构建，未构建时自动跳过 |
 | `npm run test:ui` | 无额外依赖的 UI 冒烟：启动临时服务与无头 Chrome（CDP），检查桌面五个页面、390px 移动布局、侧栏导航与脚本错误 |
 | `npm run lint` | ESLint 检查 `src`、`server`、`tests` |
 | `npm run typecheck` | `tsc --checkJs`，覆盖刷流、备份、TJUPT 与新拆出的 UI 组件 |
 | `npm run format:check` | Prettier 格式检查（printWidth 120、单引号） |
 | `npm run check` | 汇总 lint、类型、格式、语法检查与生产构建 |
 
-`npm run test:ui` 需要本机安装 Chrome，因此不在 CI 中运行；GitHub Actions 工作流见 [`.github/workflows/ci.yml`](.github/workflows/ci.yml)，会在 Node 22 上依次执行 lint、typecheck、format:check、test 与 build。
+`npm run test:ui` 需要本机安装 Chrome，因此不在 CI 中运行；GitHub Actions 工作流见 [`.github/workflows/ci.yml`](.github/workflows/ci.yml)，会在 Node 22 上依次执行 lint、typecheck、format:check、build 与 test。`npm test` 中的站点打包检查需要先执行 `npm run build`，未构建时会自动跳过。
 
 ## 已知限制
 
 - **只适配两个站点**：目前仅支持 M-Team 与 TJUPT；其他 NexusPHP 站点需要自行补充解析与白名单。
 - **TJUPT 依赖页面结构**：站点没有开放 API，账号统计与搜索来自 HTML 解析，站点改版后可能暂时读不到；解析失败显示「—」而不是 0。TJUPT 页面不提供累计下载和分享率，界面保持「—」。
-- **TJUPT 会话**：Cookie 仅保存在内存，应用重启后需重新登录；密码登录遇到两步验证页时会明确提示，需改用浏览器登录 Cookie 连接。
+- **TJUPT 会话**：密码登录产生的会话 Cookie 仅保存在内存，应用重启后需重新登录；两步验证账号使用的浏览器登录 Cookie 属于连接凭据，会加密保存并可随备份迁移。密码登录遇到两步验证页时会明确提示。
 - **刷流只排序**：不会自动加种，也不会修改分享率或做种时长限制；忽略列表只存在当前设备。
 - **下载页只读**：暂停、删除、限速等操作请在 qBittorrent 中完成。
 - **种子格式**：支持 BitTorrent v1 与 hybrid `.torrent`，元数据上限 4 MB；暂不支持纯 v2 种子、磁力链接，以及需要浏览器 Cookie 才能下载的其他站点。

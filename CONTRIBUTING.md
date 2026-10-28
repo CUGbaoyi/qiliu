@@ -37,11 +37,11 @@ npm run dev
 | `npm run lint` | ESLint 检查 `src`、`server`、`tests` |
 | `npm run typecheck` | `tsc --checkJs`，覆盖刷流、备份、TJUPT 模块与新 UI 组件 |
 | `npm run format` / `npm run format:check` | 使用 Prettier 写入 / 检查格式 |
-| `npm test` | `node --test` 自动化测试 |
+| `npm test` | `node --test` 自动化测试；站点打包检查需先构建，未构建时自动跳过 |
 | `npm run test:ui` | 无头 Chrome（CDP）UI 冒烟：桌面五页 + 390px 移动布局 + 侧栏导航 + 脚本错误 |
 | `npm run build` | 生产构建 |
 | `npm run check` | lint + 类型 + 格式 + 语法检查 + 构建，提交前建议执行 |
-| `npm run test:sites` | 静态资源 Worker 测试（涉及 `worker/` 时运行） |
+| `npm run test:sites` | 静态资源 Worker 测试（需先 `npm run build`） |
 
 改动前端交互时，请至少在桌面宽度与 390px 宽度下自查；有条件的话运行 `npm run test:ui`。新增逻辑请补充对应的 `tests/*.test.mjs`，测试优先使用合成夹具，不要依赖真实站点。
 

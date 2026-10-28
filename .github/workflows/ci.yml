@@ -41,10 +41,10 @@ jobs:
       - name: Format check
         run: npm run format:check
 
-      - name: Test
-        run: npm test
-
       - name: Build
         run: npm run build
+
+      - name: Test
+        run: npm test
 
       # Browser smoke tests (npm run test:ui) need a headless Chrome and are run locally only.

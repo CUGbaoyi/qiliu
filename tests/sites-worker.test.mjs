@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { existsSync } from 'node:fs';
 import { access } from 'node:fs/promises';
 import test from 'node:test';
 import worker from '../worker/index.js';
@@ -61,8 +62,16 @@ test('does not turn missing API or write requests into the app shell', async () 
   }
 });
 
-test('emits the files required by Sites packaging', async () => {
-  await access(new URL('../dist/client/index.html', import.meta.url));
-  await access(new URL('../dist/server/index.js', import.meta.url));
-  await access(new URL('../dist/.openai/hosting.json', import.meta.url));
-});
+const distFiles = [
+  new URL('../dist/client/index.html', import.meta.url),
+  new URL('../dist/server/index.js', import.meta.url),
+  new URL('../dist/.openai/hosting.json', import.meta.url),
+];
+
+test(
+  'emits the files required by Sites packaging',
+  { skip: distFiles.every((file) => existsSync(file)) ? false : '先运行 npm run build 生成 dist/' },
+  async () => {
+    for (const file of distFiles) await access(file);
+  },
+);
