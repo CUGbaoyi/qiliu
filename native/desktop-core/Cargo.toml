@@ -1,0 +1,22 @@
+[package]
+name = "qiliu-desktop-core"
+version = "0.5.0"
+edition = "2021"
+description = "栖流 Windows/Linux 桌面客户端共享核心：站点白名单、SSRF 防护、本机加密存储与 HTTP 桥接"
+publish = false
+
+[lib]
+name = "qiliu_desktop_core"
+path = "src/lib.rs"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+url = "2"
+ureq = { version = "2.12", default-features = false, features = ["tls"] }
+base64 = "0.22"
+aes-gcm = "0.10"
+rand = "0.8"
+
+[dev-dependencies]
+tempfile = "3"

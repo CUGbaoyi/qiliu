@@ -6,7 +6,8 @@ import { createTjuptClient, downloadURL as tjuptDownloadURL } from '../server/tj
 import { exportBackup, importBackup } from '../server/backup.mjs';
 import { enrichProfile } from '../server/metrics.mjs';
 import { MT_BASES } from '../server/sites.mjs';
-export const isNative = () => !!(window.QiliuAndroid || window.webkit?.messageHandlers?.qiliu);
+const tauriInvoke = () => window.__TAURI__?.core?.invoke;
+export const isNative = () => !!(window.QiliuAndroid || window.webkit?.messageHandlers?.qiliu || tauriInvoke());
 const pending = new Map();
 let sequence = 0;
 if (typeof window !== 'undefined')
@@ -26,6 +27,25 @@ export function nativeCall(action, args = {}) {
     }, 45000);
     pending.set(id, { resolve, reject, timer });
     const payload = JSON.stringify({ id, action, ...args });
+    const invoke = tauriInvoke();
+    if (invoke) {
+      invoke('qiliu', { request: { id, action, ...args } })
+        .then((result) => {
+          const p = pending.get(id);
+          if (!p) return;
+          clearTimeout(p.timer);
+          pending.delete(id);
+          result?.error ? p.reject(new Error(result.error)) : p.resolve(result?.value);
+        })
+        .catch((error) => {
+          const p = pending.get(id);
+          if (!p) return;
+          clearTimeout(p.timer);
+          pending.delete(id);
+          p.reject(new Error(typeof error === 'string' ? error : error?.message || '设备请求失败，请重试。'));
+        });
+      return;
+    }
     try {
       if (window.QiliuAndroid) window.QiliuAndroid.postMessage(payload);
       else window.webkit.messageHandlers.qiliu.postMessage(payload);

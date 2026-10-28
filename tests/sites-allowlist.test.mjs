@@ -8,6 +8,7 @@ const read = (relative) => readFileSync(new URL(`../${relative}`, import.meta.ur
 const shells = [
   ['macOS', 'native/macos/Qiliu.swift'],
   ['Android', 'native/android/src/cc/qiliu/app/MainActivity.java'],
+  ['Windows/Linux', 'native/desktop-core/src/allowlist.rs'],
 ];
 
 test('native allowlists stay in sync with the shared site lists', () => {

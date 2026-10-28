@@ -1,0 +1,113 @@
+name: Desktop
+
+# Windows (WebView2 + NSIS) 与 Linux (WebKitGTK + deb/AppImage) 桌面客户端构建。
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+    paths:
+      - 'src-tauri/**'
+      - 'native/desktop-core/**'
+      - 'src/**'
+      - 'server/**'
+      - 'public/**'
+      - 'index.html'
+      - 'vite.config.mjs'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/desktop.yml'
+  pull_request:
+    paths:
+      - 'src-tauri/**'
+      - 'native/desktop-core/**'
+      - 'src/**'
+      - 'server/**'
+      - 'public/**'
+      - 'index.html'
+      - 'vite.config.mjs'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/desktop.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: desktop-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  desktop:
+    name: Desktop (${{ matrix.label }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Windows
+            os: windows-latest
+            bundles: nsis
+            artifact: qiliu-windows
+          - label: Linux
+            os: ubuntu-22.04
+            bundles: deb,appimage
+            artifact: qiliu-linux
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+
+      - name: Install Linux WebView dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            build-essential \
+            curl \
+            wget \
+            file \
+            libxdo-dev \
+            libssl-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            patchelf
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Test Rust core
+        run: cargo test --manifest-path native/desktop-core/Cargo.toml
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Build desktop bundles
+        run: npx tauri build --bundles ${{ matrix.bundles }}
+
+      - name: Upload installers
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          if-no-files-found: error
+          path: |
+            src-tauri/target/release/bundle/**/*.exe
+            src-tauri/target/release/bundle/**/*.deb
+            src-tauri/target/release/bundle/**/*.AppImage
+            src-tauri/target/release/qiliu-desktop
+            src-tauri/target/release/qiliu-desktop.exe

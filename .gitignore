@@ -12,6 +12,10 @@ secrets/
 
 # Native build artifacts
 native/.build/
+native/desktop-core/target/
+native/desktop-core/Cargo.lock
+src-tauri/target/
+src-tauri/gen/
 
 # Build artifacts shipped via GitHub Releases instead of git (APK / macOS zip)
 installers/

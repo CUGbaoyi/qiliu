@@ -1,0 +1,24 @@
+[package]
+name = "qiliu-desktop"
+version = "0.5.0"
+description = "栖流 Windows/Linux 桌面客户端"
+edition = "2021"
+rust-version = "1.77"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+qiliu-desktop-core = { path = "../native/desktop-core" }
+open = "5"
+url = "2"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true
+panic = "abort"

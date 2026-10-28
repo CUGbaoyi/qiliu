@@ -1,6 +1,7 @@
 import { api, savePreference } from './data';
 import { Icon } from './ui';
 import { ArrowRightIcon, DatabaseIcon } from '@phosphor-icons/react';
+import pkg from '../package.json';
 
 export function SettingsPage({
   compact,
@@ -171,10 +172,10 @@ export function SettingsPage({
           <h2>
             栖流 <span>QILIU</span>
           </h2>
-          <p>你的站点，你的空间。版本 0.4.0</p>
+          <p>你的站点，你的空间。版本 {pkg.version}</p>
           <p>
             {state.native
-              ? '凭据加密保存在此设备。Android 与 Mac 均可独立联网使用。'
+              ? '凭据加密保存在此设备。Android、macOS、Windows 与 Linux 均可独立联网使用。'
               : 'Web 预览仍由本机服务提供；安装原生客户端后可独立运行。'}
           </p>
           <p>实时数据需要设备能访问站点及下载器。各设备收藏独立保存。</p>
