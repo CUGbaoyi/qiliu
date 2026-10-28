@@ -36,3 +36,5 @@ Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts
 - 2026-10-28 验证: TJUPT 真实账号（Cookie 登录）联调通过：解析账号面板/做种列表/每小时魔力、搜索 100 条/页、刷流候选、passkey 下载（10.7KB 种子 v1 哈希）与 RSS；TJUPT HTML 结构确认为 torrentname 嵌套表 + 顶部用户面板，解析器已按真实结构重写并用合成夹具回归。站点不展示累计下载/分享率，保持「—」。
 - 2026-10-28 request: 手机底部导航只保留 5 项，顺序为总览/刷流/发现/下载/我的；桌面侧栏顺序同步为总览/刷流/发现/订阅/下载/收藏/站点。把「订阅」移到「我的 → RSS 订阅」入口。
 - 2026-10-28 修复: qBittorrent 不同版本 /api/v2/torrents/add 响应不一致（Ok. / Ok / 空 / JSON），不再按 body 严格判断；只有明确 Fails./error 才报拒绝，其余以任务哈希是否出现为准，并短暂重试任务列表，避免“已接受却提示未接受”。
+- 2026-10-28 request: 增加 Windows/Linux 独立桌面客户端，采用 Tauri 2（Rust + 系统 WebView），共享 native/desktop-core 的白名单/SSRF/Vault/HTTP；版本升至 0.5.0；本机 macOS 无法实机验证，产物由 CI 构建。
+- 2026-10-28 request: M-Team 登录提醒——总览账号卡显示 40 天登录倒计时（基于 memberStatus.lastBrowse，缺失回退 lastLogin）；剩余 ≤7 天页头出现提醒胶囊、总览顶部显示横幅并可直达站点登录；≤3 天紧急、逾期明确提示；接口无时间显示「—」。高等级/封存账号豁免以站内规则为准。

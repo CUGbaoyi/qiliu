@@ -4,11 +4,20 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循[语义化版本](https://semver.org/lang/zh-CN/)。早期版本说明已合并整理，不再保留单独的发布文件。
 
-## [Unreleased]
+## [0.5.0] - 2026-10-28
+
+### 新增
+
+- **Windows / Linux 桌面客户端（Tauri 2）**：新增基于 Tauri 2 的独立桌面客户端，Rust 壳 + 系统 WebView（Windows 使用 WebView2，Linux 使用 WebKitGTK 4.1），复用同一份前端与业务逻辑；设备直连站点与 qBittorrent，不需要常开服务端。前端检测 `window.__TAURI__`，通过 Tauri command `qiliu` 调用 read/write/http 完成桥接。Windows 产物为 NSIS 安装包（`.exe`），Linux 产物为 `.deb` 与 `.AppImage`，均通过 GitHub Releases 发布。
+- **Rust 桌面核心**：新增 `native/desktop-core`，用纯 Rust 实现与 Swift / Java 壳一致的站点白名单、SSRF 防护、凭据 Vault（`local.key` + AES-256-GCM `vault.enc`）与 HTTP 桥接（HTTPS 校验、4 MB 体积上限、15 秒超时、禁止跟随重定向），并附带覆盖白名单、IP 判定、加解密与请求参数校验的 `cargo test` 单元测试。
+- **桌面 CI 矩阵**：新增 `.github/workflows/desktop.yml`，在 `windows-latest` 与 `ubuntu-22.04` 上运行 Rust 单元测试、构建当前系统的安装包并上传 artifacts；源码构建入口为 `npm run desktop:build`，测试入口为 `npm run desktop:test`。
+- **M-Team 登录提醒**：总览账号卡显示按最近访问时间计算的 40 天登录倒计时；剩余 ≤7 天时页头提醒胶囊与总览横幅同时出现，≤3 天转为紧急提示、逾期明确提示，点击可直接打开 M-Team 登录；接口未返回时间时显示「—」而不猜测。高等级/封存账号的豁免以站内规则为准。
 
 ### 变更
 
+- 版本升至 **0.5.0**：`package.json`、Tauri 配置与 Rust core 的版本号同步更新；新增 `desktop:build` / `desktop:test` 脚本，`npm run build` 仍是桌面构建的前置步骤。
 - 开源仓库整理：采用 MIT 许可证，补充 `LICENSE`、`CONTRIBUTING.md`、`SECURITY.md`、GitHub Actions CI、`.gitattributes`、`.editorconfig` 与 PR 模板；`package.json` 增加 `license`、`description` 与 `engines.node >= 22`。安装包不再进入 Git 仓库，改由 GitHub Releases 发布。
+- 文档更新：README 增加 Windows / Linux 形态、Tauri 2 技术栈、桌面构建与测试入口及平台验证边界；新增 [Windows / Linux 桌面客户端](docs/desktop-clients.md) 说明；SECURITY、CONTRIBUTING 与 NAS 部署文档同步 0.5.0 的凭据位置、构建依赖与版本示例。
 
 ## [0.4.0] - 2026-10-28
 
@@ -56,5 +65,6 @@
 - macOS 与 Android 安装包更新，应用身份与配置目录保持不变。
 - 自动化回归测试、ESLint 与生产构建通过，覆盖 qBittorrent 兼容、原生传输与弹窗交互。
 
+[0.5.0]: #050---2026-10-28
 [0.4.0]: #040---2026-10-28
 [0.3.1]: #031---2026-10-28

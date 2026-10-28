@@ -53,16 +53,16 @@ Android APK 与 macOS 客户端各自直连站点和下载器，不依赖 NAS �
 
 ## 离线镜像（可选）
 
-如果已在本机构建并导出镜像（例如 `docker save -o qiliu-0.4.0.tar qiliu:0.4.0`），可以先在 NAS 上导入，避免现场构建：
+如果已在本机构建并导出镜像（例如 `docker save -o qiliu-0.5.0.tar qiliu:0.5.0`），可以先在 NAS 上导入，避免现场构建：
 
 ```sh
-docker load -i qiliu-0.4.0.tar
+docker load -i qiliu-0.5.0.tar
 ```
 
 然后在 `.env` 中指定同一个镜像名：
 
 ```dotenv
-QILIU_IMAGE=qiliu:0.4.0
+QILIU_IMAGE=qiliu:0.5.0
 ```
 
 之后跳过构建启动：
