@@ -13,6 +13,7 @@ export const demoProfile = {
   seeding: 128,
   seedingSize: 3.2 * 1024 ** 4,
   assessment: null,
+  lastSeen: new Date(Date.now() - 34 * 864e5).toISOString(),
   syncedAt: null,
   demo: true,
 };

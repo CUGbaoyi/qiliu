@@ -43,7 +43,7 @@ export function normalizeProfile(data, peers = null) {
     warned: typeof data.memberStatus?.warned === 'boolean' ? data.memberStatus.warned : null,
     vipUntil: data.memberStatus?.vip ? data.memberStatus.vipUntil : null,
     joined: data.createdDate || null,
-    lastSeen: data.memberStatus?.lastBrowse || null,
+    lastSeen: data.memberStatus?.lastBrowse || data.memberStatus?.lastLogin || null,
     syncedAt: new Date().toISOString(),
     demo: false,
   };

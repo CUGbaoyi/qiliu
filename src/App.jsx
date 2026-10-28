@@ -41,6 +41,7 @@ import {
 } from './data';
 import { Icon, Modal, Art } from './ui';
 import { Account } from './Account';
+import { loginCountdown } from '../server/login-reminder.mjs';
 import { SitesPage } from './SitesPage';
 import { SettingsPage } from './SettingsPage';
 const nav = [
@@ -132,6 +133,7 @@ export function App() {
       setFormError('');
       setModal(name);
     };
+  const mtLogin = site === 'mteam' && !demo ? loginCountdown(profile?.lastSeen) : null;
   useEffect(() => {
     if (!toast) return;
     const id = setTimeout(() => setToast(''), 3800);
@@ -645,6 +647,19 @@ export function App() {
                 返回真实数据
               </button>
             )}
+            {mtLogin && mtLogin.level !== 'ok' && (
+              <a
+                className={`login-pill ${mtLogin.level}`}
+                href="https://kp.m-team.cc"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="M-Team 连续 40 天未登录会被删除，点此打开站点登录">
+                <Icon as={WarningCircleIcon} size={15} />
+                <span className="login-pill-text">
+                  M-Team 登录 {mtLogin.daysLeft <= 0 ? '已逾期' : `剩 ${mtLogin.daysLeft} 天`}
+                </span>
+              </a>
+            )}
             <span className="today">
               {new Date().toLocaleDateString('zh-CN', {
                 year: 'numeric',
@@ -669,6 +684,22 @@ export function App() {
             <button onClick={initialize}>重新连接</button>
           </div>
         )}
+        {view === 'overview' && mtLogin && mtLogin.level !== 'ok' && (
+          <div className={`login-reminder ${mtLogin.level}`} role="alert">
+            <Icon as={WarningCircleIcon} size={18} />
+            <span>
+              <strong>M-Team 登录提醒：</strong>
+              {mtLogin.level === 'expired'
+                ? `已超过 40 天未登录（最近访问 ${dateLabel(profile?.lastSeen)}），账号可能已被删除。`
+                : `还有 ${mtLogin.daysLeft} 天需要登录一次（截止 ${dateLabel(mtLogin.deadline)}）。`}
+              M-Team 规则：未封存账号连续 40 天不登录会被删除，部分高等级/封存账号豁免，以站内规则为准。
+            </span>
+            <a className="text-button" href="https://kp.m-team.cc" target="_blank" rel="noopener noreferrer">
+              打开 M-Team 登录
+            </a>
+          </div>
+        )}
+
         {demo && view !== 'overview' && (
           <div className="demo-notice">
             <Icon as={InfoIcon} size={16} />
@@ -1102,6 +1133,8 @@ export function App() {
               ['可用邀请', numeric(profile?.invites)],
               ['加入时间', dateLabel(profile?.joined)],
               ['最近访问', dateLabel(profile?.lastSeen)],
+              ['登录截止', mtLogin ? dateLabel(mtLogin.deadline) : '—'],
+              ['登录剩余', mtLogin ? (mtLogin.daysLeft <= 0 ? '已逾期' : `${mtLogin.daysLeft} 天`) : '—'],
               ['账号警告', profile?.warned === true ? '有警告' : profile?.warned === false ? '无' : '—'],
               ['VIP 到期', dateLabel(profile?.vipUntil)],
             ].map(([l, v]) => (

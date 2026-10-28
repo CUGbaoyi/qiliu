@@ -15,7 +15,8 @@ import {
   ArrowsClockwiseIcon,
 } from '@phosphor-icons/react';
 import { Icon, Amount } from './ui';
-import { numeric, ratio, relativeLabel } from './data';
+import { dateLabel, numeric, ratio, relativeLabel } from './data';
+import { loginCountdown } from '../server/login-reminder.mjs';
 
 export function Account({ data, demo, refreshing, onRefresh, onSites, onDetails, configured, error, siteName }) {
   const v = data || {};
@@ -28,6 +29,10 @@ export function Account({ data, demo, refreshing, onRefresh, onSites, onDetails,
     ],
     [ShareNetworkIcon, '分享率', v.ratio == null ? <span title="站点未提供该数值">—</span> : ratio(v.ratio)],
   ];
+  const login = siteName === 'M-Team' ? loginCountdown(v.lastSeen) : null;
+  const loginTitle = login
+    ? `M-Team 规则：未封存账号连续 40 天未登录会被删除（部分高等级/封存账号豁免，以站内规则为准）。最近访问：${dateLabel(v.lastSeen)}；截止：${dateLabel(login.deadline)}。`
+    : '站点未返回最近访问时间';
   const secondary = [
     [StarIcon, '魔力值', numeric(v.bonus)],
     [DatabaseIcon, '做种汇总', numeric(v.seeding)],
@@ -44,9 +49,13 @@ export function Account({ data, demo, refreshing, onRefresh, onSites, onDetails,
     ],
     [
       CalendarBlankIcon,
-      '考核状态',
-      v.assessment || (
-        <span className="muted" title="站点当前接口未提供考核数据">
+      '登录剩余',
+      login ? (
+        <span className={`login-countdown ${login.level}`} title={loginTitle}>
+          {login.daysLeft <= 0 ? '已逾期' : `${login.daysLeft} 天`}
+        </span>
+      ) : (
+        <span className="muted" title={siteName === 'M-Team' ? loginTitle : 'TJUPT 未提供登录有效期'}>
           —
         </span>
       ),
