@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "strict": false,
+    "skipLibCheck": true,
+    "jsx": "react-jsx",
+    "types": []
+  },
+  "include": [
+    "server/farming.mjs",
+    "server/backup.mjs",
+    "server/tjupt.mjs",
+    "src/ui.jsx",
+    "src/Account.jsx",
+    "types/**/*.d.ts"
+  ]
+}

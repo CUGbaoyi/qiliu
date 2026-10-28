@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+coverage/
+*.tsbuildinfo
+
+# Local encrypted credentials vault — never commit
+.data/
+secrets/
+
+# Native build artifacts
+native/.build/
+
+# Build artifacts shipped via GitHub Releases instead of git (APK / macOS zip)
+installers/
+
+# Secrets and signing material
+.env
+.env.local
+.env.*
+!.env.example
+*.jks
+*.keystore
+
+# Logs
+*.log
+
+# Screenshots captured from a live instance
+docs/*-live.png
+
+# Editor / OS noise
+.DS_Store
+.idea/
+.vscode/
+
+# Sync conflicts left behind by file sync tools
+*.sync-conflict-*

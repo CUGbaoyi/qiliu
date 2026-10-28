@@ -1,0 +1,18 @@
+# Normalize all text files to LF in the repository and in working trees
+* text=auto eol=lf
+
+# Binaries must never be line-ending converted or diffed as text
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.ico binary
+*.icns binary
+*.apk binary
+*.zip binary
+*.jar binary
+
+# Shell entry points stay LF so they run on macOS and Linux
+*.sh text eol=lf
+*.command text eol=lf

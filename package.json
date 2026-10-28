@@ -1,0 +1,45 @@
+{
+  "name": "qiliu",
+  "version": "0.4.0",
+  "description": "栖流 QILIU 是一个自托管的 PT 工作台，汇总账号概览、做种收益、下载与多站点刷流。",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "node server/index.mjs --dev",
+    "build": "vite build && node scripts/prepare-sites-build.mjs",
+    "preview": "vite preview",
+    "test:sites": "node --test tests/sites-worker.test.mjs",
+    "start": "node server/index.mjs",
+    "start:lan": "node server/index.mjs --host 0.0.0.0",
+    "test": "node --test tests/*.test.mjs",
+    "check": "npm run lint && npm run typecheck && npm run format:check && node --check server/app.mjs && node --check server/model.mjs && node --check server/network.mjs && node --check server/vault.mjs && node --check server/farming.mjs && node --check server/tjupt.mjs && node --check server/backup.mjs && vite build",
+    "lint": "eslint src server tests",
+    "test:ui": "node scripts/ui-smoke.mjs",
+    "format": "prettier --write \"src/**/*.{js,jsx}\" \"server/**/*.mjs\" \"tests/**/*.mjs\" \"scripts/**/*.mjs\"",
+    "format:check": "prettier --check \"src/**/*.{js,jsx}\" \"server/**/*.mjs\" \"tests/**/*.mjs\" \"scripts/**/*.mjs\"",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@noble/ciphers": "^1.3.0",
+    "@noble/hashes": "^1.8.0",
+    "@phosphor-icons/react": "^2.1.10",
+    "@vitejs/plugin-react": "5.0.4",
+    "express": "^5.3.0",
+    "fast-xml-parser": "^5.11.2",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "vite": "6.4.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "eslint": "^9.39.5",
+    "eslint-plugin-react": "^7.37.5",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.10",
+    "typescript": "^5.9.3"
+  }
+}

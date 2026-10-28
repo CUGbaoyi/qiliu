@@ -1,0 +1,26 @@
+services:
+  qiliu:
+    build: .
+    image: ${QILIU_IMAGE:-qiliu:0.4.0}
+    restart: unless-stopped
+    ports:
+      - "${QILIU_PORT:-4173}:4173"
+    environment:
+      QILIU_ADMIN_PASSWORD_FILE: /run/secrets/admin_password
+      QILIU_PUBLIC_ORIGIN: ${QILIU_PUBLIC_ORIGIN:?请在 .env 中填写访问地址}
+    secrets:
+      - admin_password
+    volumes:
+      - qiliu-data:/data
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m
+secrets:
+  admin_password:
+    file: ./secrets/admin_password.txt
+volumes:
+  qiliu-data:
