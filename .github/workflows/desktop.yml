@@ -111,3 +111,71 @@ jobs:
             src-tauri/target/release/bundle/**/*.AppImage
             src-tauri/target/release/qiliu-desktop
             src-tauri/target/release/qiliu-desktop.exe
+
+  macos:
+    name: Build macOS installer
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: macos-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Build macOS bundle
+        run: QILIU_INSTALLERS="$GITHUB_WORKSPACE/installers" scripts/build-native.sh mac
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: qiliu-macos
+          if-no-files-found: error
+          path: installers/Qiliu-*-mac-universal.zip
+
+  release:
+    name: Publish GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [desktop, macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download installers
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Publish release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: 栖流 ${{ github.ref_name }}
+          fail_on_unmatched_files: true
+          files: |
+            artifacts/qiliu-windows/**/*.exe
+            artifacts/qiliu-linux/**/*.deb
+            artifacts/qiliu-linux/**/*.AppImage
+            artifacts/qiliu-macos/**/*.zip
+          body: |
+            ## 栖流 ${{ github.ref_name }}
+
+            - Windows / Linux 独立桌面客户端（Tauri 2）
+            - M-Team 登录提醒与 40 天倒计时
+            - Rust 桌面核心（白名单 / SSRF / Vault / HTTP）
+
+            Windows、Linux 与 macOS 安装包由 GitHub Actions 在对应系统构建，未做代码签名；
+            Linux 需要系统 WebKitGTK 4.1。Android APK 需使用 Android SDK 与签名密钥单独构建。
+
+            详细变更见 [CHANGELOG](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/CHANGELOG.md)。
+
