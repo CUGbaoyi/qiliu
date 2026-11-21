@@ -2476,7 +2476,7 @@ dependencies = [
 
 [[package]]
 name = "qiliu-desktop"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "open",
  "qiliu-desktop-core",
@@ -2489,7 +2489,7 @@ dependencies = [
 
 [[package]]
 name = "qiliu-desktop-core"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "aes-gcm",
  "base64 0.22.1",

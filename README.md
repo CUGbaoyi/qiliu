@@ -4,7 +4,7 @@
 
 栖流（QILIU，读音 qī liú）是一个自托管的 Private Tracker 工作台。它把站点账号概览、做种与魔力收益、资源发现、RSS 订阅、收藏、刷流候选和 qBittorrent 下载进度放进同一个界面，并同时提供 Web、Windows、Linux、Android、macOS 和 NAS Docker 六种运行形态。
 
-当前版本 **0.5.0**，使用 **MIT** 许可证，需要 **Node.js >= 22**。版本变更见 [CHANGELOG.md](CHANGELOG.md)。
+当前版本 **0.5.1**，使用 **MIT** 许可证，需要 **Node.js >= 22**。版本变更见 [CHANGELOG.md](CHANGELOG.md)。
 
 | 形态 | 说明 |
 | --- | --- |
@@ -99,7 +99,7 @@ docker compose up -d --build
 
 ### 桌面与移动客户端
 
-Windows、Linux、Android 与 macOS 客户端都由设备直接访问站点和下载器，不需要额外常开一台服务端 Mac 或 NAS。安装包不进入 Git 仓库，统一通过 **GitHub Releases** 随版本发布；0.5.0 的产物包括 `Qiliu-0.5.0-android.apk`、`Qiliu-0.5.0-mac-universal.zip`，以及 Windows 与 Linux 安装包（NSIS `.exe`、`.deb` 与 `.AppImage`）。源码构建方式如下：
+Windows、Linux、Android 与 macOS 客户端都由设备直接访问站点和下载器，不需要额外常开一台服务端 Mac 或 NAS。安装包不进入 Git 仓库，统一通过 **GitHub Releases** 随版本发布；0.5.1 的产物包括 `Qiliu-0.5.1-android.apk`、`Qiliu-0.5.1-mac-universal.zip`，以及 Windows 与 Linux 安装包（NSIS `.exe`、`.deb` 与 `.AppImage`）。源码构建方式如下：
 
 ```sh
 npm run build

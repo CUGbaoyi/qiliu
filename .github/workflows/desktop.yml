@@ -239,12 +239,12 @@ jobs:
           body: |
             ## 栖流 ${{ github.ref_name }}
 
-            - Windows / Linux 独立桌面客户端（Tauri 2）
-            - M-Team 登录提醒与 40 天倒计时
-            - Rust 桌面核心（白名单 / SSRF / Vault / HTTP）
+            - 刷流排序新增「可下载性」门槛，避免「1 个做种、数百个下载」的种子排到最前
+            - 刷流页新增做种人数筛选（默认 ≥3，可选不限 / ≥5 / ≥10 / ≥20）
+            - 源不足的候选显示「可能下不动」警告，不再把下载人数当作推荐理由
 
             Windows、Linux、macOS 与 Android 安装包由 GitHub Actions 在对应系统构建；
-            Android APK 使用原签名（与 0.4.0 证书一致，可覆盖安装）。安装包未做代码签名，
+            Android APK 使用原签名（与 0.5.0 证书一致，可覆盖安装）。安装包未做代码签名，
             Linux 需要系统 WebKitGTK 4.1。
 
             详细变更见 [CHANGELOG](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/CHANGELOG.md)。

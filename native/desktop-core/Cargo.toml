@@ -1,6 +1,6 @@
 [package]
 name = "qiliu-desktop-core"
-version = "0.5.0"
+version = "0.5.1"
 edition = "2021"
 description = "栖流 Windows/Linux 桌面客户端共享核心：站点白名单、SSRF 防护、本机加密存储与 HTTP 桥接"
 publish = false

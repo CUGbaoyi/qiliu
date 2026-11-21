@@ -1,6 +1,6 @@
 {
   "name": "qiliu",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "栖流 QILIU 是一个自托管的 PT 工作台，汇总账号概览、做种收益、下载与多站点刷流。",
   "license": "MIT",
   "private": true,
