@@ -468,6 +468,7 @@ export function createApp({
         const prefs = {
           freeOnly: req.query.freeOnly !== '0',
           hours: Math.max(1, Math.min(168, Number(req.query.hours) || 24)),
+          minSeeders: Math.max(0, Math.min(1000, Number(req.query.minSeeders ?? 3) || 0)),
           minLeechers: Math.max(0, Math.min(1000, Number(req.query.minLeechers) || 0)),
           maxSizeGB: Math.max(0, Math.min(2048, Number(req.query.maxSizeGB) || 0)),
         };
@@ -499,6 +500,7 @@ export function createApp({
       const prefs = {
         freeOnly: req.query.freeOnly !== '0',
         hours: Math.max(1, Math.min(168, Number(req.query.hours) || 24)),
+        minSeeders: Math.max(0, Math.min(1000, Number(req.query.minSeeders ?? 3) || 0)),
         minLeechers: Math.max(0, Math.min(1000, Number(req.query.minLeechers) || 0)),
         maxSizeGB: Math.max(0, Math.min(2048, Number(req.query.maxSizeGB) || 0)),
       };

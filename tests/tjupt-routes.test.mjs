@@ -56,7 +56,8 @@ async function withApp(run, { requestTjupt = goodFetch } = {}) {
   }
 }
 
-test('TJUPT connect, profile, search, farming and disconnect through the HTTP API', async () => {
+test('TJUPT connect, profile, search, farming and disconnect through the HTTP API', async (t) => {
+  t.mock.timers.enable({ apis: ['Date'], now: Date.parse('2026-10-28T12:00:00Z') });
   await withApp(async ({ request, getState }) => {
     const connected = await request('/api/sites/tjupt/connect', 'POST', {
       username: 'alice',
@@ -92,7 +93,7 @@ test('TJUPT connect, profile, search, farming and disconnect through the HTTP AP
     assert.equal(farming.status, 200);
     assert.equal(farming.data.items.length, 2);
     assert.ok(farming.data.items[0].score >= farming.data.items[1].score);
-    assert.ok(farming.data.items[0].breakdown.length === 5);
+    assert.equal(farming.data.items[0].breakdown.length, 6);
     assert.equal(farming.data.site, 'tjupt');
 
     const kept = await request('/api/sites/tjupt/connect', 'POST', {

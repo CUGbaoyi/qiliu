@@ -3,13 +3,30 @@
 export const GB = 1024 ** 3;
 export const FARMING_MODES = ['upload', 'bonus'];
 export const FARMING_MODE_LABELS = { upload: '上传量', bonus: '魔力值' };
-export const FARMING_DEFAULT_PREFS = Object.freeze({ freeOnly: true, hours: 24, minLeechers: 0, maxSizeGB: 0 });
+export const FARMING_DEFAULT_PREFS = Object.freeze({
+  freeOnly: true,
+  hours: 24,
+  minLeechers: 0,
+  maxSizeGB: 0,
+  minSeeders: 3,
+});
+
+// 可下载性达到 70 分即不折损总分；低于门槛按比例折算，最低保留 30%。
+export const FEASIBILITY_TARGET = 70;
+const FEASIBILITY_FLOOR = 0.3;
 
 const WEIGHTS = {
   upload: { freshness: 0.3, supply: 0.3, free: 0.2, heat: 0.1, size: 0.1 },
   bonus: { freshness: 0.15, supply: 0.1, free: 0.2, heat: 0.05, size: 0.5 },
 };
-const LABELS = { freshness: '新鲜度', supply: '供需', free: '优惠', heat: '热度', size: '体积' };
+const LABELS = {
+  freshness: '新鲜度',
+  supply: '供需',
+  free: '优惠',
+  heat: '热度',
+  size: '体积',
+  feasibility: '可下载性',
+};
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const finite = (value) => (Number.isFinite(Number(value)) ? Number(value) : null);
@@ -37,6 +54,7 @@ export function freshnessScore(hours) {
   return Math.round(clamp(100 * Math.exp(-hours / 24), 0, 100));
 }
 
+// 供需只衡量“下完之后有多少人可以上传”，不衡量“能不能下得动”。
 export function supplyScore(seeders, leechers) {
   const s = Math.max(0, finite(seeders) ?? 0),
     l = Math.max(0, finite(leechers) ?? 0);
@@ -44,6 +62,22 @@ export function supplyScore(seeders, leechers) {
   const ratio = l / (s + 1);
   const balance = (100 * ratio) / (ratio + 1.5);
   return Math.round(clamp(demand * 0.4 + balance * 0.6, 0, 100));
+}
+
+// 可下载性只看源：做种是否足够、以及你能否在下载队列里分到带宽。
+// 1 个做种 / 数百个下载的种子会在这里得到很低的分数，不再靠“供需比”冲到前排。
+export function feasibilityScore(seeders, leechers) {
+  const s = Math.max(0, finite(seeders) ?? 0),
+    l = Math.max(0, finite(leechers) ?? 0);
+  if (s <= 0) return 0;
+  const source = 1 - Math.exp(-s / 2.5); // 1 个源约 0.33，3 个 0.70，10 个 0.98
+  const crowd = s / (s + l); // 下载者越多，你能分到的做种越少
+  const share = 0.4 + 0.6 * Math.sqrt(crowd);
+  return Math.round(clamp(100 * source * share, 0, 100));
+}
+
+export function feasibilityGate(feasibility) {
+  return clamp(feasibility / FEASIBILITY_TARGET, FEASIBILITY_FLOOR, 1);
 }
 
 export function heatScore(completed) {
@@ -73,30 +107,45 @@ export function sizeScore(size, mode = 'upload') {
   return 30;
 }
 
-function reasonFor(torrent, parts, mode) {
+function reasonFor(torrent, parts, mode, hours) {
   const reasons = [];
   const discount = discountInfo(torrent);
+  const seeders = finite(torrent?.seeders) ?? 0;
+  const leechers = finite(torrent?.leechers) ?? 0;
   if (discount.free) reasons.push(discount.label);
-  if (parts.freshness >= 70) reasons.push(`新种 ${ageHours(torrent.date)?.toFixed(0) ?? '?'} 小时内`);
-  const ratio = (finite(torrent.leechers) ?? 0) / ((finite(torrent.seeders) ?? 0) + 1);
-  if (ratio >= 1.5) reasons.push(`下载人数是做种的 ${ratio.toFixed(1)} 倍`);
-  if (parts.heat >= 60) reasons.push(`已有 ${finite(torrent.completed) ?? 0} 次完成`);
+  if (parts.freshness >= 70 && hours !== null) reasons.push(`新种 ${hours.toFixed(0)} 小时内`);
+  const ratio = leechers / (seeders + 1);
+  // 源不足时不拿“下载人数是做种的 N 倍”当推荐理由，避免把下不动的种子说成好候选。
+  if (parts.feasibility >= 45 && ratio >= 1.5) reasons.push(`下载人数是做种的 ${ratio.toFixed(1)} 倍`);
+  if (parts.feasibility >= 70) reasons.push(`做种 ${seeders} 个，源充足`);
+  if (parts.heat >= 60) reasons.push(`已有 ${finite(torrent?.completed) ?? 0} 次完成`);
   if (mode === 'upload' && parts.size >= 80 && !reasons.includes('体积适中')) reasons.push('体积适中，适合快速出种');
   if (mode === 'bonus' && parts.size >= 85) reasons.push('小体积，魔力效率高');
   return reasons.slice(0, 3).join(' · ') || '常规候选，可按需选择';
+}
+
+function warningFor(torrent, parts) {
+  if (parts.feasibility >= 45) return '';
+  const s = finite(torrent?.seeders) ?? 0;
+  const l = finite(torrent?.leechers) ?? 0;
+  if (s <= 1) return `只有 ${s} 个做种、${l} 个下载，基本下不动`;
+  return `做种 ${s} 个、下载 ${l} 个，可能抢不到带宽`;
 }
 
 export function scoreCandidate(torrent, { mode = 'upload', now = Date.now() } = {}) {
   const activeMode = FARMING_MODES.includes(mode) ? mode : 'upload';
   const weights = WEIGHTS[activeMode];
   const hours = ageHours(torrent?.date, now);
+  const feasibility = feasibilityScore(torrent?.seeders, torrent?.leechers);
   const parts = {
     freshness: freshnessScore(hours),
     supply: supplyScore(torrent?.seeders, torrent?.leechers),
     free: discountInfo(torrent).score,
     heat: heatScore(torrent?.completed),
     size: sizeScore(torrent?.size, activeMode),
+    feasibility,
   };
+  /** @type {Array<{ key: string, label: string, value: number, weight: number | null, points: number, gate?: number }>} */
   const breakdown = Object.keys(weights).map((key) => ({
     key,
     label: LABELS[key],
@@ -104,25 +153,41 @@ export function scoreCandidate(torrent, { mode = 'upload', now = Date.now() } = 
     weight: weights[key],
     points: Math.round(parts[key] * weights[key] * 10) / 10,
   }));
-  const score = Math.round(breakdown.reduce((total, row) => total + row.points, 0));
+  const base = breakdown.reduce((total, row) => total + row.points, 0);
+  const gate = feasibilityGate(feasibility);
+  const score = Math.round(base * gate);
+  // 可下载性是一道门槛而非加分项：低于门槛时以负分形式折算总分，拆解仍能加回 score。
+  breakdown.push({
+    key: 'feasibility',
+    label: LABELS.feasibility,
+    value: feasibility,
+    weight: null,
+    points: Math.round((score - base) * 10) / 10,
+    gate: Math.round(gate * 100) / 100,
+  });
   return {
     ...torrent,
     score,
     grade: score >= 75 ? 'A' : score >= 55 ? 'B' : score >= 35 ? 'C' : 'D',
-    reason: reasonFor(torrent, parts, activeMode),
+    reason: reasonFor(torrent, parts, activeMode, hours),
+    warning: warningFor(torrent, parts),
     breakdown,
     mode: activeMode,
     ageHours: hours === null ? null : Math.round(hours * 10) / 10,
+    feasibility,
+    feasibilityGate: Math.round(gate * 100) / 100,
   };
 }
 
-export function matchesFilters(torrent, prefs = {}) {
-  const { freeOnly = true, hours = 24, minLeechers = 0, maxSizeGB = 0, excludeCategories = [] } = prefs;
+export function matchesFilters(torrent, prefs = {}, now = Date.now()) {
+  const { freeOnly = true, hours = 24, minLeechers = 0, maxSizeGB = 0, minSeeders = 3, excludeCategories = [] } = prefs;
   if (excludeCategories.map(String).includes(String(torrent?.category))) return false;
   if (freeOnly && !discountInfo(torrent).free) return false;
-  const age = ageHours(torrent?.date);
+  const age = ageHours(torrent?.date, now);
   if (age === null) return false;
   if (age > hours) return false;
+  const seeders = finite(torrent?.seeders);
+  if (minSeeders > 0 && (seeders === null || seeders < minSeeders)) return false;
   const leechers = finite(torrent?.leechers);
   if (leechers !== null && leechers < minLeechers) return false;
   if (minLeechers > 0 && leechers === null) return false;
@@ -134,7 +199,7 @@ export function matchesFilters(torrent, prefs = {}) {
 export function rankCandidates(items, { mode = 'upload', prefs = {}, now = Date.now() } = {}) {
   const merged = { ...FARMING_DEFAULT_PREFS, ...prefs };
   return (Array.isArray(items) ? items : [])
-    .filter((item) => matchesFilters(item, merged))
+    .filter((item) => matchesFilters(item, merged, now))
     .map((item) => scoreCandidate(item, { mode, now }))
     .sort((a, b) => b.score - a.score || Date.parse(b.date) - Date.parse(a.date));
 }

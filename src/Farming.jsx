@@ -14,7 +14,7 @@ import { api, bytes, numeric, dateLabel, demoFarming, readPreference, savePrefer
 import { rankCandidates } from '../server/farming.mjs';
 
 const MODES = [
-  { id: 'upload', label: '上传量', hint: '优先新种、免费、下载人数明显多于做种' },
+  { id: 'upload', label: '上传量', hint: '优先新种、免费、做种充足且下载人数多于做种' },
   { id: 'bonus', label: '魔力值', hint: '优先小体积、免费，适合长期挂种累积魔力' },
 ];
 const WINDOWS = [
@@ -29,6 +29,13 @@ const LEECHERS = [
   [3, '≥ 3'],
   [10, '≥ 10'],
   [30, '≥ 30'],
+];
+const SEEDERS = [
+  [0, '不限'],
+  [3, '≥ 3'],
+  [5, '≥ 5'],
+  [10, '≥ 10'],
+  [20, '≥ 20'],
 ];
 const SIZES = [
   [0, '不限'],
@@ -69,6 +76,7 @@ export function Farming({
 }) {
   const [mode, setMode] = useState('upload');
   const [hours, setHours] = useState(24);
+  const [minSeeders, setMinSeeders] = useState(3);
   const [minLeechers, setMinLeechers] = useState(0);
   const [maxSizeGB, setMaxSizeGB] = useState(0);
   const [freeOnly, setFreeOnly] = useState(true);
@@ -79,7 +87,10 @@ export function Farming({
   const [error, setError] = useState('');
   const [ignored, setIgnored] = useState(readIgnored);
 
-  const prefs = useMemo(() => ({ freeOnly, hours, minLeechers, maxSizeGB }), [freeOnly, hours, minLeechers, maxSizeGB]);
+  const prefs = useMemo(
+    () => ({ freeOnly, hours, minSeeders, minLeechers, maxSizeGB }),
+    [freeOnly, hours, minSeeders, minLeechers, maxSizeGB],
+  );
   const active = MODES.find((item) => item.id === mode) || MODES[0];
 
   useEffect(() => {
@@ -92,6 +103,7 @@ export function Farming({
     const params = new URLSearchParams({
       mode,
       hours: String(hours),
+      minSeeders: String(minSeeders),
       minLeechers: String(minLeechers),
       maxSizeGB: String(maxSizeGB),
       freeOnly: freeOnly ? '1' : '0',
@@ -112,7 +124,7 @@ export function Farming({
       live = false;
       controller.abort();
     };
-  }, [demo, site, configured, mode, hours, minLeechers, maxSizeGB, freeOnly, page, revision]);
+  }, [demo, site, configured, mode, hours, minSeeders, minLeechers, maxSizeGB, freeOnly, page, revision]);
 
   const demoItems = useMemo(
     () => (demo || !configured ? rankCandidates(demoFarming(), { mode, prefs, now: Date.now() }) : []),
@@ -189,6 +201,21 @@ export function Farming({
                 setPage(1);
               }}>
               {WINDOWS.map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            做种人数
+            <select
+              value={minSeeders}
+              onChange={(event) => {
+                setMinSeeders(Number(event.target.value));
+                setPage(1);
+              }}>
+              {SEEDERS.map(([value, label]) => (
                 <option key={value} value={value}>
                   {label}
                 </option>
@@ -281,11 +308,22 @@ export function Farming({
                     </span>
                   </p>
                   <p className="farming-reason">{item.reason}</p>
+                  {item.warning && (
+                    <p className="farming-warning">
+                      <WarningCircleIcon size={13} />
+                      {item.warning}
+                    </p>
+                  )}
                   <div className="farming-breakdown" aria-label="评分构成">
                     {item.breakdown.map((row) => (
                       <span
                         key={row.key}
-                        title={`${row.label} ${row.value}/100，权重 ${Math.round(row.weight * 100)}%`}>
+                        className={row.key === 'feasibility' ? 'feasibility' : ''}
+                        title={
+                          row.key === 'feasibility'
+                            ? `可下载性 ${row.value}/100，总分按 ${Math.round((row.gate || 0) * 100)}% 折算`
+                            : `${row.label} ${row.value}/100，权重 ${Math.round(row.weight * 100)}%`
+                        }>
                         {row.label}
                         <b>{row.value}</b>
                       </span>
@@ -314,12 +352,13 @@ export function Farming({
           <div className="empty-state farming-empty">
             <GaugeIcon size={38} />
             <h3>当前条件下没有候选</h3>
-            <p>放宽发布时间、下载人数或体积上限，或者关闭「仅免费」再试。</p>
+            <p>放宽做种人数、发布时间、下载人数或体积上限，或者关闭「仅免费」再试。</p>
             <button
               className="secondary-button"
               onClick={() => {
                 setFreeOnly(false);
                 setHours(72);
+                setMinSeeders(0);
                 setMinLeechers(0);
                 setMaxSizeGB(0);
                 setPage(1);

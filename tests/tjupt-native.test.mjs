@@ -3,7 +3,8 @@ import { detailsHtml, seedingHtml, listHtml } from './fixtures/tjupt.mjs';
 import assert from 'node:assert/strict';
 import { createNativeClient } from '../src/native.js';
 
-test('native client connects TJUPT, exposes state and serves profile/search/farming', async () => {
+test('native client connects TJUPT, exposes state and serves profile/search/farming', async (t) => {
+  t.mock.timers.enable({ apis: ['Date'], now: Date.parse('2026-10-28T12:00:00Z') });
   let saved = '';
   const calls = [];
   const call = async (action, args = {}) => {

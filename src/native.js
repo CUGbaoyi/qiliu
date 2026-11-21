@@ -373,6 +373,7 @@ export function createNativeClient(call) {
         const tprefs = {
           freeOnly: u.searchParams.get('freeOnly') !== '0',
           hours: Math.max(1, Math.min(168, Number(u.searchParams.get('hours')) || 24)),
+          minSeeders: Math.max(0, Math.min(1000, Number(u.searchParams.get('minSeeders') ?? 3) || 0)),
           minLeechers: Math.max(0, Math.min(1000, Number(u.searchParams.get('minLeechers')) || 0)),
           maxSizeGB: Math.max(0, Math.min(2048, Number(u.searchParams.get('maxSizeGB')) || 0)),
         };
@@ -404,6 +405,7 @@ export function createNativeClient(call) {
       const prefs = {
         freeOnly: u.searchParams.get('freeOnly') !== '0',
         hours: Math.max(1, Math.min(168, Number(u.searchParams.get('hours')) || 24)),
+        minSeeders: Math.max(0, Math.min(1000, Number(u.searchParams.get('minSeeders') ?? 3) || 0)),
         minLeechers: Math.max(0, Math.min(1000, Number(u.searchParams.get('minLeechers')) || 0)),
         maxSizeGB: Math.max(0, Math.min(2048, Number(u.searchParams.get('maxSizeGB')) || 0)),
       };

@@ -38,3 +38,4 @@ Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts
 - 2026-10-28 修复: qBittorrent 不同版本 /api/v2/torrents/add 响应不一致（Ok. / Ok / 空 / JSON），不再按 body 严格判断；只有明确 Fails./error 才报拒绝，其余以任务哈希是否出现为准，并短暂重试任务列表，避免“已接受却提示未接受”。
 - 2026-10-28 request: 增加 Windows/Linux 独立桌面客户端，采用 Tauri 2（Rust + 系统 WebView），共享 native/desktop-core 的白名单/SSRF/Vault/HTTP；版本升至 0.5.0；本机 macOS 无法实机验证，产物由 CI 构建。
 - 2026-10-28 request: M-Team 登录提醒——总览账号卡显示 40 天登录倒计时（基于 memberStatus.lastBrowse，缺失回退 lastLogin）；剩余 ≤7 天页头出现提醒胶囊、总览顶部显示横幅并可直达站点登录；≤3 天紧急、逾期明确提示；接口无时间显示「—」。高等级/封存账号豁免以站内规则为准。
+- 2026-11-21 request/实现: 刷流排序修正——“1 个做种 + 数百个下载”会排到前排但实际下不动。新增「可下载性」（做种数 + 做种/下载占比）作为门槛：低于 70 分按比例折算总分，最低保留 30%；`minSeeders` 默认 ≥3 并可在刷流页调整；`matchesFilters`/`rankCandidates` 支持注入 `now` 以便测试。刷流仍只排序、不自动加种。
